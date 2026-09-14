@@ -1,0 +1,3 @@
+# EdgeOne / 部署工具残留
+.edgeone/
+.env
