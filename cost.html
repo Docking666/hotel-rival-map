@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>成本</title>
+<title>成本与价格模拟</title>
 <style>
   :root{--bg:#f5f6f8;--card:#fff;--line:#e9ebee;--text:#1f2329;--text2:#7a8290;
     --primary:#1e3a5f;--accent:#b8860b;--fix:#c05621;--var:#2b6cb0;}
@@ -11,10 +11,6 @@
   html,body{margin:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
   .wrap{max-width:560px;margin:0 auto;padding:12px 12px calc(22px + env(safe-area-inset-bottom))}
-  .nav{display:flex;gap:7px;margin-bottom:12px}
-  .nav a{flex:1;text-align:center;padding:9px 0;border-radius:9px;font-size:13px;text-decoration:none;
-    color:var(--text2);background:#fff;border:1px solid var(--line)}
-  .nav a.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
   .card{background:var(--card);border-radius:14px;padding:15px;margin-bottom:11px;box-shadow:0 1px 3px rgba(0,0,0,.045)}
   h2{font-size:15px;margin:0 0 11px;font-weight:600}
   .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:11px}
@@ -53,16 +49,31 @@
   .thr{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
   .thr b{font-size:16px;color:var(--text)}
   .ts{font-size:11px;color:#9aa0a6;text-align:center;margin-top:10px}
+  .sub{font-size:12px;color:var(--text2);line-height:1.6;margin:0 0 12px}
+  .f{margin-bottom:12px}
+  .f label{display:block;font-size:12.5px;color:var(--text2);margin-bottom:5px}
+  .f input{width:100%;height:42px;border:1px solid var(--line);border-radius:9px;padding:0 12px;
+    font-size:16px;color:var(--text);background:#fbfcfd;font-variant-numeric:tabular-nums;
+    -webkit-appearance:none;appearance:none}
+  .f input:focus{outline:none;border-color:var(--primary);background:#fff}
+  .f .hint{font-size:11.5px;color:var(--text2);margin-top:5px;line-height:1.6}
+  .btn{width:100%;height:46px;border:none;border-radius:10px;background:var(--primary);color:#fff;
+    font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:active{opacity:.88}
+  .big{font-size:32px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--accent)}
+  .big .u{font-size:14px;font-weight:500;color:var(--text2);margin-left:3px}
+  .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:7px 0}
+  .row + .row{border-top:1px dashed var(--line)}
+  .k{font-size:13px;color:var(--text2)}
+  .vv2{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+  .vv2.pos{color:#c0392b} .vv2.neg{color:#1e7e34}
+  .warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;
+    padding:10px 12px;font-size:12.5px;line-height:1.65}
+  .simout .row{padding:7px 0}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="nav">
-    <a class="on" href="#">成本</a>
-    <a href="sim.html">价格模拟</a>
-    <a href="index.html">竞对地图</a>
-  </div>
-
   <div class="cards3">
     <div class="kpi"><div class="lb">单房成本线</div><div class="vv" id="kLine">--</div><div class="un">元/间夜</div></div>
     <div class="kpi"><div class="lb">保本价</div><div class="vv" id="kBe">--</div><div class="un">元/间夜</div></div>
@@ -78,7 +89,7 @@
       <span><i class="lt" style="background:var(--fix)"></i>固定成本分摊 <b id="shareF">0</b>%</span>
     </div>
     <p class="note">
-      月可售间夜 <b>1,890</b> 间夜（63 间 × 30 天）
+      月可售间夜 <b>1890</b> 间夜（63 间 × 30 天）
       　·　月固定成本总额 <b>0</b> 元
     </p>
   </div>
@@ -137,10 +148,45 @@
     <div class="thr">涨幅超过 <b>15</b> % 时标红预警（与上一版本环比）</div>
   </div>
 
-  <div class="ts">数据生成：2026/9/14 21:33:15</div>
+  <div class="card">
+    <h2>价格模拟</h2>
+    <p class="sub">输入调价方案，按价格弹性模型估算订单量与收益变化（模拟结果仅供参考）</p>
+
+    <div class="f"><label>当前售价（元/间夜）*</label>
+      <input id="p0" type="number" inputmode="decimal" placeholder="如：500" /></div>
+    <div class="f"><label>拟调整售价（元/间夜）*</label>
+      <input id="p1" type="number" inputmode="decimal" placeholder="如：460" /></div>
+    <div class="f"><label>当前入住率（%）*</label>
+      <input id="occ" type="number" inputmode="decimal" placeholder="0–100" /></div>
+    <div class="f"><label>价格弹性系数 *</label>
+      <input id="k" type="number" inputmode="decimal" value="1.2" />
+      <div class="hint">默认 1.2：价格每涨 1%，需求约降 1.2%。数值越大越敏感</div></div>
+    <div class="f"><label>房间总数（间）*</label>
+      <input id="rc" type="number" inputmode="numeric" value="63" /></div>
+
+    <button class="btn" id="run">运行模拟</button>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none">
+    <h2>模拟结果</h2>
+    <div style="text-align:center;padding:6px 0 10px">
+      <div class="big" id="newOcc">--<span class="u">%</span></div>
+      <div class="sub" style="margin:4px 0 0">模拟入住率</div>
+    </div>
+    <div class="row"><span class="k">价格变化</span><span class="vv2" id="dPrice">--</span></div>
+    <div class="row"><span class="k">需求变化</span><span class="vv2" id="dDemand">--</span></div>
+    <div class="row"><span class="k">原收入</span><span class="vv2" id="baseRev">--</span></div>
+    <div class="row"><span class="k">新收入</span><span class="vv2" id="newRev">--</span></div>
+    <div class="row"><span class="k">收入变化</span><span class="vv2" id="dRev">--</span></div>
+    <p class="sub" style="margin:12px 0 0" id="formula"></p>
+  </div>
+
+  <div class="card" style="display:none" id="warnCard"></div>
+  <div class="ts">数据生成：2026/9/14 21:47:21</div>
 </div>
 
 <script>
+const D = {"roomCount":63};
 const COST_LINE = 33;
 const MARGIN0 = 60;
 const yuan = (n) => '¥' + (Math.round(n * 100) / 100).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -174,11 +220,55 @@ $('targetCard').addEventListener('click', () => {
   render();
 });
 
-const foot = document.createElement('div');
-foot.className = 'foot';
-foot.textContent = '成本项的新增与修改请在飞书「成本项」表中进行；移动端 Base 支持直接编辑单元格。';
-document.querySelector('.wrap').appendChild(foot);
 render();
+</script>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const yuanInt = (n) => '¥' + Math.round(n).toLocaleString('zh-CN');
+  const pct = (n, d) => (n >= 0 ? '+' : '−') + Math.abs(n).toFixed(d == null ? 1 : d) + '%';
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const round = (v, d) => { const m = Math.pow(10, d == null ? 0 : d); return Math.round(v * m) / m; };
+  const num = (id) => { const v = $(id).value; if (v.trim() === '') return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+
+  function simulate() {
+    const p0 = num('p0'), p1 = num('p1'), occ = num('occ'), k = num('k'), rc = num('rc');
+    const warnCard = $('warnCard'), resCard = $('resultCard');
+    if (p0 === null || p1 === null || p0 <= 0 || occ === null || !rc || k === null) {
+      if (p0 !== null || p1 !== null || occ !== null || rc !== null) {
+        warnCard.style.display = 'block';
+        warnCard.innerHTML = '<div class="warn">请完整填写上述参数后查看模拟结果。</div>';
+      } else warnCard.style.display = 'none';
+      resCard.style.display = 'none';
+      return;
+    }
+    warnCard.style.display = 'none';
+
+    const priceDelta = (p1 - p0) / p0;
+    const demandDelta = -k * priceDelta;
+    const newOcc = round(clamp(occ * (1 + demandDelta), 5, 100), 1);
+    const baseRev = round((occ / 100) * rc * p0);
+    const newRev = round((newOcc / 100) * rc * p1);
+    const dRev = round(newRev - baseRev);
+    const dPct = baseRev > 0 ? round(((newRev - baseRev) / baseRev) * 100, 1) : null;
+
+    resCard.style.display = 'block';
+    $('newOcc').innerHTML = newOcc + '<span class="u">%</span>';
+    $('dPrice').textContent = pct(priceDelta * 100);
+    $('dPrice').className = 'vv2 ' + (priceDelta >= 0 ? 'pos' : 'neg');
+    $('dDemand').textContent = pct(demandDelta * 100);
+    $('dDemand').className = 'vv2 ' + (demandDelta >= 0 ? 'pos' : 'neg');
+    $('baseRev').textContent = yuanInt(baseRev);
+    $('newRev').textContent = yuanInt(newRev);
+    $('dRev').textContent = (dRev >= 0 ? '+' : '−') + yuanInt(Math.abs(dRev)).slice(1) + (dPct != null ? '（' + pct(dPct) + '）' : '');
+    $('dRev').className = 'vv2 ' + (dRev >= 0 ? 'pos' : 'neg');
+    $('formula').textContent = '需求变化率 = −' + k + ' × 价格变化率；模拟入住率已钳制在 5%–100%。';
+  }
+
+  ['p0', 'p1', 'occ', 'k', 'rc'].forEach((id) => $(id).addEventListener('input', simulate));
+  $('run').addEventListener('click', simulate);
+})();
 </script>
 </body>
 </html>
