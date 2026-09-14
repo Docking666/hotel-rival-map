@@ -82,7 +82,7 @@
   </div>
 
   <div class="card" style="display:none" id="warnCard"></div>
-  <div class="ts">数据生成：2026/9/14 21:25:33</div>
+  <div class="ts">数据生成：2026/9/14 21:33:15</div>
 </div>
 
 <script>
@@ -131,5 +131,9 @@ function simulate() {
 ['p0','p1','occ','k','rc'].forEach((id) => $(id).addEventListener('input', simulate));
 $('run').addEventListener('click', simulate);
 </script>
+const foot = document.createElement('div');
+foot.className = 'foot';
+foot.textContent = '建议仅供参考，最终定价由经营者判断。';
+document.querySelector('.wrap').appendChild(foot);
 </body>
 </html>
