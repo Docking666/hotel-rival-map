@@ -11,6 +11,13 @@
   html,body{margin:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
   .wrap{max-width:560px;margin:0 auto;padding:12px 12px calc(22px + env(safe-area-inset-bottom))}
+  @media(min-width:820px){ .wrap{max-width:1100px;padding:20px 20px calc(26px + env(safe-area-inset-bottom))} }
+  .cols{display:block}
+  @media(min-width:820px){
+    .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+    .cols .col .card{margin-bottom:12px}
+    .cols .col .card:last-child{margin-bottom:0}
+  }
   .card{background:var(--card);border-radius:14px;padding:15px;margin-bottom:11px;box-shadow:0 1px 3px rgba(0,0,0,.045)}
   h2{font-size:15px;margin:0 0 11px;font-weight:600}
   .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:11px}
@@ -81,6 +88,8 @@
   </div>
   <p class="note" style="margin-top:0">保本价 = 变动成本 + 固定成本分摊；目标售价 = 保本价 ÷ (1 − 目标毛利率)，点按目标售价可手动指定</p>
 
+  <div class="cols">
+  <div class="col">
   <div class="card">
     <h2>成本构成</h2>
     <div class="stack"><i class="v" id="barV" style="width:100%"></i><i class="f" id="barF" style="width:0%"></i></div>
@@ -148,6 +157,8 @@
     <div class="thr">涨幅超过 <b>15</b> % 时标红预警（与上一版本环比）</div>
   </div>
 
+  </div>
+  <div class="col">
   <div class="card">
     <h2>价格模拟</h2>
     <p class="sub">输入调价方案，按价格弹性模型估算订单量与收益变化（模拟结果仅供参考）</p>
@@ -181,8 +192,10 @@
     <p class="sub" style="margin:12px 0 0" id="formula"></p>
   </div>
 
+  </div>
   <div class="card" style="display:none" id="warnCard"></div>
-  <div class="ts">数据生成：2026/9/14 21:49:03</div>
+  </div>
+  <div class="ts">数据生成：2026/9/14 22:24:22</div>
 </div>
 
 <script>
