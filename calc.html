@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>成本速算器</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --line:#e6e8eb; --text:#1f2329; --text2:#646a73;
+    --primary:#1e3a5f; --accent:#b8860b; --pos:#c0392b; --neg:#1e7e34;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-text-size-adjust:100%}
+  .wrap{max-width:560px;margin:0 auto;padding:14px 14px calc(20px + env(safe-area-inset-bottom))}
+  .nav{display:flex;gap:8px;margin-bottom:12px}
+  .nav a{flex:1;text-align:center;padding:9px 0;border-radius:9px;font-size:13px;
+    text-decoration:none;color:var(--text2);background:#fff;border:1px solid var(--line)}
+  .nav a.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
+  .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .title{font-size:13px;color:var(--text2);margin:0 0 6px}
+  .big{font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.15;font-variant-numeric:tabular-nums}
+  .big .u{font-size:15px;font-weight:500;color:var(--text2);margin-left:3px}
+  .hero{background:var(--primary);color:#fff}
+  .hero .title{color:rgba(255,255,255,.75)}
+  .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .row + .row{margin-top:9px}
+  .k{font-size:13px;color:var(--text2)}
+  .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+  .v.pos{color:var(--pos)} .v.neg{color:var(--neg)}
+  .sl{margin:14px 0 2px}
+  .sl label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--text2)}
+  .sl b{font-size:17px;color:var(--text);font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;margin:4px 0 0}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:#dfe2e6}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;
+    background:#fff;border:3px solid var(--primary);margin-top:-12px;box-shadow:0 1px 5px rgba(0,0,0,.18)}
+  input[type=range]::-moz-range-track{height:6px;border-radius:6px;background:#dfe2e6}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;
+    border:3px solid var(--primary);box-shadow:0 1px 5px rgba(0,0,0,.18)}
+  .out{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
+  .out .big{color:var(--accent)}
+  .hint{font-size:12px;color:var(--text2);line-height:1.65;margin:8px 0 0}
+  .ts{font-size:11px;color:#9aa0a6;text-align:center;margin-top:4px}
+  .chip{display:inline-block;padding:2px 8px;border-radius:20px;background:#eef1f4;
+    font-size:11px;color:var(--text2);margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav">
+    <a class="on" href="#">成本速算</a>
+    <a href="index.html">竞对地图</a>
+  </div>
+
+  <div class="card hero">
+    <p class="title">维爱思国际酒店 · 成本线（保本价）</p>
+    <div class="big" id="cost">¥--<span class="u">/间夜</span></div>
+    <p class="hint" style="color:rgba(255,255,255,.72);margin-top:6px">
+      单价房晚成本 + 单房固定成本分摊，由「成本项」自动汇总
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="sl">
+      <label>目标毛利率 <b id="mVal">60%</b></label>
+      <input id="m" type="range" min="0" max="90" step="1" value="60" />
+    </div>
+    <div class="out">
+      <p class="title">对应目标售价</p>
+      <div class="big" id="target">¥--<span class="u">/间夜</span></div>
+      <p class="hint" id="targetHint"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sl">
+      <label>拟执行售价 <b id="pVal">¥--</b></label>
+      <input id="p" type="range" min="1" max="100" step="1" value="50" />
+    </div>
+    <div class="out">
+      <div class="row"><span class="k">收益空间（相对保本价）</span><span class="v" id="space">--</span></div>
+      <div class="row"><span class="k">实际毛利率</span><span class="v" id="realM">--</span></div>
+      <div class="row"><span class="k">状态</span><span class="v" id="state">--</span></div>
+    </div>
+    <p class="hint">收益空间 = 拟执行售价 − 保本价；实际毛利率 = 1 − 保本价 ÷ 拟执行售价。<br/>低于保本价即为亏损区间，谨慎调整。</p>
+  </div>
+
+  <div class="card">
+    <p class="title">口径</p>
+    <p class="hint" style="margin-top:0">
+      <span class="chip">单位房晚成本</span>周期为「间夜 / 天」的成本项之和<br/>
+      <span class="chip">固定成本分摊</span>周期为「月 / 年」的成本项，折成月后 ÷（房间数 × 30）<br/>
+      一天一间房 = 1 间夜，故「间夜」与「天」等价。
+    </p>
+    <div class="ts">数据生成：2026/9/14 21:08:30</div>
+  </div>
+</div>
+
+<script>
+const COST = 33;
+const $ = (id) => document.getElementById(id);
+const yuan = (n) => '¥' + (Math.round(n * 100) / 100).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+$('cost').innerHTML = yuan(COST) + '<span class="u">/间夜</span>';
+
+/* 拟售价滑块范围：保本价的一半 ~ 保本价的 3 倍 */
+const pMin = Math.max(1, Math.round(COST * 0.5));
+const pMax = Math.round(COST * 3);
+const pEl = $('p');
+pEl.min = pMin; pEl.max = pMax; pEl.value = Math.round(COST * 1.5);
+
+function fmtPct(x) { return (x * 100).toFixed(1) + '%'; }
+
+function render() {
+  const m = Number($('m').value) / 100;
+  $('mVal').textContent = Math.round(m * 100) + '%';
+  const target = m < 1 ? COST / (1 - m) : null;
+  if (target) {
+    $('target').innerHTML = yuan(target) + '<span class="u">/间夜</span>';
+    $('targetHint').textContent = '毛利率越高，要覆盖成本并达标，售价需越高（按保本价 ÷ (1 − 毛利率) 计算）';
+  } else {
+    $('target').textContent = '--';
+    $('targetHint').textContent = '毛利率 100% 时无解';
+  }
+
+  const p = Number(pEl.value);
+  $('pVal').textContent = yuan(p);
+  const space = p - COST;
+  const realM = 1 - COST / p;
+  const sp = $('space'), rm = $('realM'), st = $('state');
+  sp.textContent = (space >= 0 ? '+' : '−') + yuan(Math.abs(space)).slice(1) + ' 元';
+  sp.className = 'v ' + (space >= 0 ? 'pos' : 'neg');
+  rm.textContent = fmtPct(realM);
+  rm.className = 'v ' + (realM >= 0 ? 'pos' : 'neg');
+  if (space < 0) { st.textContent = '低于保本价 · 亏损'; st.className = 'v neg'; }
+  else if (realM < 0.3) { st.textContent = '薄利区间'; st.className = 'v'; }
+  else { st.textContent = '健康区间'; st.className = 'v pos'; }
+}
+
+$('m').addEventListener('input', render);
+pEl.addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
